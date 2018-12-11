@@ -37,6 +37,7 @@ see [https://www.davdroid.com](https://www.davdroid.com), so we can really recom
 - cPanel
 - Cyrus Imap 2.5
 - DAViCal
+- EGroupware
 - Fruux
 - GMX
 - Google Calendar
@@ -50,7 +51,7 @@ see [https://www.davdroid.com](https://www.davdroid.com), so we can really recom
 - mailbox.org
 - Nextcloud
 - One.com
-- OpenX-change
+- Open-Xchange
 - Owncloud
 - Posteo
 - Radicale
@@ -110,14 +111,26 @@ see [https://www.davdroid.com](https://www.davdroid.com), so we can really recom
 **WARNING**: Beginning with release 3.0.0 .NET framework 4.6.1 is the minimal requirement.
 
 Download and extract the `OutlookCalDavSynchronizer-<Version>.zip` into any directory and start setup.exe. You can change the default install path, but you need to use a directory on the `C:\` drive.
-If the installer is complaining about the missing Visual Studio 2010 Tools for Office Runtime, install it manually from [Microsoft Download Link](https://www.microsoft.com/en-us/download/details.aspx?id=54251)
-You should also update manually to the latest Visual Studio 2010 Tools for Office Runtime (Version 10.0.60825) if you have an older version installed, since some COMExceptions have been fixed.
+If the installer is complaining about the missing Visual Studio 2010 Tools for Office Runtime, install it manually from [Microsoft Download Link](https://www.microsoft.com/en-us/download/details.aspx?id=56961)
+You should also update manually to the latest Visual Studio 2010 Tools for Office Runtime (Version 10.0.60828) if you have an older version installed, since some COMExceptions have been fixed.
 
 Beginning with version 2.9.0 the default install location is `ProgramFilesDir\CalDavSynchronizer\` and the installer remembers the chosen directory for the next updates. Also the install option to install for Everyone instead of the current user is working now for Outlook 2010 and higher, if you want to install the addin for all users on the current machine. For Outlook 2007 you can only install the addin for the current user.
 
 We recommend updating to the latest .Net Framework but the minimal required version is .NET 4.6.1, which is not supported on Windows XP. If you need Outlook CalDav Synchronizer for Windows XP you can download a backport to .Net 4.0 from a forked project [here](https://sourceforge.net/projects/outlookcaldavsynchronizerxp/), thanks to [Salvatore Isaja](https://sourceforge.net/u/salvois/profile/) for the awesome work!
 
 ### Changelog ###
+
+#### 3.3.0 ####
+- Released 2018/12/09
+- New features
+	- Add Open-Xchange profile type.
+	- Add iCloud Calendar profile type.
+- Bug fixes
+	- Ignore alarms with ACTION different to DISPLAY to not sync email alarms as Outlook reminders, ticket #978.
+	- Force organizer of exception to be the same as event organizer to avoid SameOrganizerForAllComponentsException. Github issues 240,244.
+	- Move using block inside try/catch in Create to avoid issues with SaveAndReload of new empty AppointmentItems.
+	- Improve deserialization of SOGo VLISTs.
+	- Limit CalDav-resourcenames to 255 chars.
 
 #### 3.2.1 ####
 - Released 2018/09/11
@@ -1333,7 +1346,9 @@ Since vCard in version 3.0 doesn't support contact groups we use X-ADDRESSBOOK-S
 
 For Google you can use the new Google type profile which simplifies the setup. You just need to enter the email address of your google account. When testing the settings, you will be redirected to your browser to enter your Google Account password and grant access rights to your Google Calender, Contacts and Tasks for OutlookCalDavSynchronizer via the safe OAuth protocol. After that Autodiscovery will try to find available calendar, addressbook and task resources. 
 
-For contacts you can activate the checkbox **Use Google native API**. This should improve performance and other mapping issues, since the Google Contacts API supports more features than the generic CardDAV API. Compared to CardDAV this adds:
+You can control which calendars are available via CalDAV and shown in autodiscovery in your calendar settings, see [https://calendar.google.com/calendar/syncselect](https://calendar.google.com/calendar/syncselect)
+
+For contacts you should activate the checkbox **Use Google native API**. This will improve performance and other mapping issues, since the Google Contacts API supports more features than the generic CardDAV API. Compared to CardDAV this adds:
 
 - Support for google contact groups, which are synced to Outlook categories.
 - Added mapping for anniversary, relations (spouse, child, etc.) and IMs for google contacts (Contribution from Florian Saller, thank you!).
@@ -1368,6 +1383,11 @@ Now it will work on port 5006 with https.
 Apple changed their security policy recently (June 2017). You need to enable Two-Factor-Authentication and an app-specific password for CalDavSynchronizer, see
 [https://support.apple.com/en-us/HT204397](https://support.apple.com/en-us/HT204397)
 
+For syncing iCloud Calendar select the preconfigured iCloud Calendar profile type, which uses     the following CalDAV URL
+
+    https://caldav.icloud.com
+
+Only as a fallback if the autodiscovery fails you can use the following procedur
 To find the correct DAV url for iCloud you need some information from the MacOS, where you are connected with your calendar.
 
 Open with Textedit: `~/Library/Calendars/*.caldav/Info.plist` 
@@ -1383,6 +1403,7 @@ Then you get the DAV url of the calendar:
     `https://p**-caldav.icloud.com/*********/calendars/********-****-****-****-************/`
 
 For syncing iCloud contacts select the preconfigured iCloud contacts profile type, which uses the following CardDAV URL
+
     https://contacts.icloud.com
 and press '*Test or discover settings*' for autodiscovery, the final URL should look like
     
